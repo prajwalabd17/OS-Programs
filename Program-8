@@ -1,0 +1,160 @@
+/*
+8. Simulate following File Organization Techniques: 
+A) Single level directory
+B) Two level directory
+*/
+
+A) Single level directory
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_FILES 100
+#define MAX_NAME_LENGTH 256
+
+typedef struct File {
+    char name[MAX_NAME_LENGTH];
+    int size;
+    char content[1024];
+} File;
+
+typedef struct Directory {
+    File files[MAX_FILES];
+    int num_files;
+} Directory;
+
+File createFile(const char* name, int size, const char* content) {
+    File newFile;
+    strncpy(newFile.name, name, MAX_NAME_LENGTH);
+    newFile.size = size;
+    strncpy(newFile.content, content, sizeof(newFile.content));
+    return newFile;
+}
+
+void addFileToDirectory(Directory* directory, File file) {
+    if (directory->num_files < MAX_FILES) {
+        directory->files[directory->num_files] = file;
+        directory->num_files++;
+    } else {
+        printf("Directory is full. Cannot add more files.\n");
+    }
+}
+
+void displayDirectoryContents(const Directory* directory) {
+    printf("Directory Contents:\n");
+    for (int i = 0; i < directory->num_files; i++) {
+        printf("File: %s, Size: %d\n", directory->files[i].name, directory->files[i].size);
+    }
+}
+
+int main() {
+    Directory directory;
+    directory.num_files = 0;
+
+    File file1 = createFile("File1.txt", 100, "This is the content of File1.");
+    addFileToDirectory(&directory, file1);
+
+    File file2 = createFile("File2.txt", 200, "Content of File2 goes here.");
+    addFileToDirectory(&directory, file2);
+
+    displayDirectoryContents(&directory);
+
+    return 0;
+}
+
+
+B) Two level directory
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_DIRS 100
+#define MAX_FILES 100
+
+struct FileEntry {
+    char name[50];
+    char content[1000];
+};
+
+struct Directory {
+    char name[50];
+    struct FileEntry files[MAX_FILES];
+    int num_files;
+};
+
+int num_dirs = 0;
+struct Directory directories[MAX_DIRS];
+
+void createDirectory(char parent_name[], char dir_name[]) {
+    if (num_dirs >= MAX_DIRS) {
+        printf("Error: Maximum directories reached.\n");
+        return;
+    }
+
+    for (int i = 0; i < num_dirs; i++) {
+        if (strcmp(directories[i].name, parent_name) == 0) {
+            if (directories[i].num_files >= MAX_FILES) {
+                printf("Error: Maximum files reached in %s.\n", parent_name);
+                return;
+            }
+            strcpy(directories[num_dirs].name, dir_name);
+            directories[i].files[directories[i].num_files].content[0] = '\0';
+            directories[i].num_files++;
+            num_dirs++;
+            printf("Directory %s created in %s.\n", dir_name, parent_name);
+            return;
+        }
+    }
+    printf("Error: Parent directory not found.\n");
+}
+
+void createFile(char dir_name[], char file_name[]) {
+    for (int i = 0; i < num_dirs; i++) {
+        if (strcmp(directories[i].name, dir_name) == 0) {
+            if (directories[i].num_files >= MAX_FILES) {
+                printf("Error: Maximum files reached in %s.\n", dir_name);
+                return;
+            }
+            strcpy(directories[i].files[directories[i].num_files].name, file_name);
+            directories[i].files[directories[i].num_files].content[0] = '\0';
+            directories[i].num_files++;
+            printf("File %s created in %s.\n", file_name, dir_name);
+            return;
+        }
+    }
+    printf("Error: Directory not found.\n");
+}
+
+void listFiles(char dir_name[]) {
+    for (int i = 0; i < num_dirs; i++) {
+        if (strcmp(directories[i].name, dir_name) == 0) {
+            printf("Files in directory %s:\n", dir_name);
+            for (int j = 0; j < directories[i].num_files; j++) {
+                printf("%s\n", directories[i].files[j].name);
+            }
+            return;
+        }
+    }
+    printf("Error: Directory not found.\n");
+}
+
+int main() {
+    strcpy(directories[0].name, "root");
+    directories[0].num_files = 0;
+    num_dirs++;
+
+    char parent[50], dir[50], file[50];
+
+    createDirectory("root", "docs");
+    createDirectory("root", "images");
+    createFile("docs", "document1.txt");
+    createFile("docs", "document2.txt");
+    createFile("images", "image1.jpg");
+
+    listFiles("docs");
+    listFiles("images");
+
+    return 0;
+}
