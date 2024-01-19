@@ -72,3 +72,23 @@ int main() {
 
     return 0;
 }
+
+/* Sample Output
+Max range of disk: 200
+Initial head position: 50
+Size of the queue request: 8
+Queue of disk positions to be read: {90, 120, 35, 122, 38, 128, 65, 68}
+
+Disk head moves from 50 to 65 with seek 15
+Disk head moves from 65 to 68 with seek 3
+Disk head moves from 68 to 90 with seek 22
+Disk head moves from 90 to 120 with seek 30
+Disk head moves from 120 to 122 with seek 2
+Disk head moves from 122 to 128 with seek 6
+Disk head moves from 128 to 38 with seek 90
+Disk head moves from 38 to 35 with seek 3
+Total seek time is 171
+Average seek time is 21.375000
+
+*/
+
