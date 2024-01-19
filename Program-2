@@ -7,7 +7,6 @@ d) Priority.*/
 a) FCFS :
 
 #include <stdio.h>
-
 struct Process {
     int pid;       // Process ID
     int arrival;   // Arrival time
