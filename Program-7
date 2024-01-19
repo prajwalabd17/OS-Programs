@@ -1,0 +1,131 @@
+/*
+7. Develop a C program to simulate page replacement algorithms:
+A) FIFO 
+B) LRU
+*/
+
+A) FIFO
+
+#include <stdio.h>
+
+int main() {
+    int incomingStream[] = {4, 1, 2, 4, 5, 4, 1, 2, 3, 6};
+    int pageFaults = 0;
+    int frames = 3;
+    int m, n, s, pages;
+    pages = sizeof(incomingStream) / sizeof(incomingStream[0]);
+
+    printf("Incoming\tFrame 1\tFrame 2\tFrame 3 ");
+
+    int temp[frames];
+
+    for (m = 0; m < frames; m++) {
+        temp[m] = -1;
+    }
+
+    for (m = 0; m < pages; m++) {
+        s = 0;
+
+        for (n = 0; n < frames; n++) {
+            if (incomingStream[m] == temp[n]) {
+                s++;
+                pageFaults--;
+            }
+        }
+
+        pageFaults++;
+
+        if ((pageFaults <= frames) && (s == 0)) {
+            temp[m] = incomingStream[m];
+        } else if (s == 0) {
+            temp[(pageFaults - 1) % frames] = incomingStream[m];
+        }
+
+        printf("\n");
+        printf("%d\t\t\t", incomingStream[m]);
+
+        for (n = 0; n < frames; n++) {
+            if (temp[n] != -1)
+                printf(" %d\t\t\t", temp[n]);
+            else
+                printf(" - \t\t\t");
+        }
+    }
+
+    printf("\nTotal Page Faults:\t%d\n", pageFaults);
+
+    return 0;
+}
+
+
+B) LRU
+
+#include <stdio.h>
+#include <limits.h>
+
+int checkHit(int incomingPage, int queue[], int occupied) {
+    for (int i = 0; i < occupied; i++) {
+        if (incomingPage == queue[i])
+            return 1;
+    }
+    return 0;
+}
+
+void printFrame(int queue[], int occupied) {
+    for (int i = 0; i < occupied; i++)
+        printf("%d\t\t\t", queue[i]);
+}
+
+int main() {
+    int incomingStream[] = {1, 2, 3, 2, 1, 5, 2, 1, 6, 2, 5, 6, 3, 1, 3};
+    int n = sizeof(incomingStream) / sizeof(incomingStream[0]);
+    int frames = 3;
+    int queue[n];
+    int distance[n];
+    int occupied = 0;
+    int pagefault = 0;
+
+    printf("Page\tFrame1\tFrame2\tFrame3\n");
+
+    for (int i = 0; i < n; i++) {
+        printf("%d:\t\t", incomingStream[i]);
+
+        if (checkHit(incomingStream[i], queue, occupied)) {
+            printFrame(queue, occupied);
+        } else if (occupied < frames) {
+            queue[occupied] = incomingStream[i];
+            pagefault++;
+            occupied++;
+            printFrame(queue, occupied);
+        } else {
+            int max = INT_MIN;
+            int index;
+
+            for (int j = 0; j < frames; j++) {
+                distance[j] = 0;
+
+                for (int k = i - 1; k >= 0; k--) {
+                    ++distance[j];
+
+                    if (queue[j] == incomingStream[k])
+                        break;
+                }
+
+                if (distance[j] > max) {
+                    max = distance[j];
+                    index = j;
+                }
+            }
+
+            queue[index] = incomingStream[i];
+            printFrame(queue, occupied);
+            pagefault++;
+        }
+
+        printf("\n");
+    }
+
+    printf("Page Fault: %d", pagefault);
+
+    return 0;
+}
