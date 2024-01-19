@@ -52,7 +52,6 @@ void waitexample() {
             exit(100 + i);
         }
     }
-
     for (i = 0; i < 5; i++) {
         pid_t cpid = waitpid(pid[i], &stat, 0);
         if (WIFEXITED(stat))
