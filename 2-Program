@@ -1,0 +1,237 @@
+/*2. Simulate the following CPU scheduling algorithms to find turnaround time and waiting time 
+a) FCFS 
+b) SJF 
+c) Round Robin 
+d) Priority.*/
+
+a) FCFS :
+
+#include <stdio.h>
+
+struct Process {
+    int pid;       // Process ID
+    int arrival;   // Arrival time
+    int burst;     // Burst time
+};
+
+void fcfsScheduling(struct Process processes[], int n) {
+    int currentTime = 0;
+    printf("Process\tArrival Time\tBurst Time \tWaiting Time\tTurnaround Time\n");
+
+    for (int i = 0; i < n; i++) {
+        if (currentTime < processes[i].arrival) {
+            currentTime = processes[i].arrival;
+        }
+
+        int waitingTime = currentTime - processes[i].arrival;
+        int turnaroundTime = waitingTime + processes[i].burst;
+
+        printf("%d\t%d\t\t%d\t\t%d\t\t%d\n", processes[i].pid, processes[i].arrival,
+               processes[i].burst, waitingTime, turnaroundTime);
+
+        currentTime += processes[i].burst;
+    }
+}
+
+int main() {
+    struct Process processes[] = {
+        {1, 0, 6},
+        {2, 2, 3},
+        {3, 3, 8}
+    };
+    int n = sizeof(processes) / sizeof(processes[0]);
+    fcfsScheduling(processes, n);
+    return 0;
+}
+
+b) SJF:
+
+#include <stdio.h>
+struct Process {
+    int pid;    // Process ID
+    int burst;  // Burst time
+};
+
+void findWaitingTime(struct Process proc[], int n, int wt[]) {
+    wt[0] = 0;
+    for (int i = 1; i < n; i++) {
+        wt[i] = proc[i - 1].burst + wt[i - 1];
+    }
+}
+
+void findTurnAroundTime(struct Process proc[], int n, int wt[], int tat[]) {
+    for (int i = 0; i < n; i++) {
+        tat[i] = proc[i].burst + wt[i];
+    }
+}
+
+void findAverageTime(struct Process proc[], int n) {
+    int wt[n], tat[n];
+    findWaitingTime(proc, n, wt);
+    findTurnAroundTime(proc, n, wt, tat);
+    float total_wt = 0, total_tat = 0;
+
+    printf("Process\tBurst Time\tWaiting Time\tTurnaround Time\n");
+    for (int i = 0; i < n; i++) {
+        total_wt += wt[i];
+        total_tat += tat[i];
+        printf("%d\t%d\t\t%d\t\t%d\n", proc[i].pid, proc[i].burst, wt[i], tat[i]);
+    }
+
+    printf("Average waiting time = %.2f\n", (float)total_wt / n);
+    printf("Average turnaround time = %.2f\n", (float)total_tat / n);
+}
+
+void sortProcesses(struct Process proc[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (proc[j].burst > proc[j + 1].burst) {
+                struct Process temp = proc[j];
+                proc[j] = proc[j + 1];
+                proc[j + 1] = temp;
+            }
+        }
+    }
+}
+
+int main() {
+    int n;
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+
+    struct Process proc[n];
+    for (int i = 0; i < n; i++) {
+        proc[i].pid = i + 1;
+        printf("Enter burst time for process %d: ", i + 1);
+        scanf("%d", &proc[i].burst);
+    }
+
+    sortProcesses(proc, n);
+    findAverageTime(proc, n);
+
+    return 0;
+}
+
+c) Round Robin:
+
+#include <stdio.h>
+
+struct Process {
+    int pid;    // Process ID
+    int burst;  // Burst time
+};
+
+void roundRobinScheduling(struct Process processes[], int n, int timeQuantum) {
+    int remaining[n];
+    int currentTime = 0;
+
+    for (int i = 0; i < n; i++) {
+        remaining[i] = processes[i].burst;
+    }
+
+    while (1) {
+        int allDone = 1;
+
+        for (int i = 0; i < n; i++) {
+            if (remaining[i] > 0) {
+                allDone = 0;
+
+                if (remaining[i] > timeQuantum) {
+                    currentTime += timeQuantum;
+                    remaining[i] -= timeQuantum;
+                    printf("Process %d executed for time quantum %d\n", processes[i].pid, timeQuantum);
+                } else {
+                    currentTime += remaining[i];
+                    remaining[i] = 0;
+                    printf("Process %d executed for remaining time %d\n", processes[i].pid, remaining[i]);
+                }
+            }
+        }
+
+        if (allDone)
+            break;
+    }
+}
+
+int main() {
+    struct Process processes[] = {
+        {1, 10},
+        {2, 5},
+        {3, 8},
+        {4, 12}
+    };
+
+    int n = sizeof(processes) / sizeof(processes[0]);
+    int timeQuantum = 4;
+    roundRobinScheduling(processes, n, timeQuantum);
+
+    return 0;
+}
+
+d) Priority:
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_PROCESSES 10
+
+typedef struct Process {
+    int id;             // Process ID
+    int priority;       // Priority of the process (lower value indicates higher priority)
+    int burst_time;     // Burst time (time required to complete the process)
+} Process;
+
+void initializeProcesses(Process processes[], int num_processes) {
+    for (int i = 0; i < num_processes; i++) {
+        processes[i].id = i;
+        printf("Enter priority for Process %d: ", i);
+        scanf("%d", &processes[i].priority);
+        printf("Enter burst time for Process %d: ", i);
+        scanf("%d", &processes[i].burst_time);
+    }
+}
+
+void priorityScheduling(Process processes[], int num_processes) {
+    for (int i = 0; i < num_processes - 1; i++) {
+        for (int j = 0; j < num_processes - i - 1; j++) {
+            if (processes[j].priority > processes[j + 1].priority) {
+                Process temp = processes[j];
+                processes[j] = processes[j + 1];
+                processes[j + 1] = temp;
+            }
+        }
+    }
+
+    int total_time = 0;
+    double average_waiting_time = 0.0;
+
+    printf("\nProcess Execution Order:\n");
+    for (int i = 0; i < num_processes; i++) {
+        printf("Process %d (Priority %d) is executing for %d seconds.\n",
+               processes[i].id, processes[i].priority, processes[i].burst_time);
+        total_time += processes[i].burst_time;
+        average_waiting_time += total_time;
+        average_waiting_time += total_time;
+    }
+
+    average_waiting_time /= num_processes;
+    printf("\nAverage Waiting Time: %.2lf seconds\n", average_waiting_time);
+}
+
+int main() {
+    int num_processes;
+    printf("Enter the number of processes: ");
+    scanf("%d", &num_processes);
+
+    if (num_processes <= 0 || num_processes > MAX_PROCESSES) {
+        printf("Invalid number of processes. Please enter a valid number.\n");
+        return 1;
+    }
+
+    Process processes[MAX_PROCESSES];
+    initializeProcesses(processes, num_processes);
+    priorityScheduling(processes, num_processes);
+
+    return 0;
+}
+
